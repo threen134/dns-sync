@@ -167,7 +167,7 @@ func saveZoneFile(r []byte, zoneName, path string) {
 	}
 	ns := &dns.NS{
 		Hdr: dns.RR_Header{
-		//	Name:   zoneName + ".",
+			//	Name:   zoneName + ".",
 			Rrtype: dns.TypeNS,
 			Ttl:    DEFAULT_TTL,
 			Class:  dns.ClassINET,
@@ -216,7 +216,7 @@ func writeFile(path string, rrs []dns.RR) {
 
 func resetDNSServer(cmdstr string) {
 	cmdslice := strings.Split(cmdstr, " ")
-	cmd := exec.Command(cmdslice[0], cmdslice[:1]...)
+	cmd := exec.Command(cmdslice[0], cmdslice[1:]...)
 	output, err := cmd.CombinedOutput()
 	log.Info(string(output))
 	if err != nil {
