@@ -1,2 +1,1 @@
 # dns-sync
-# dns-sync

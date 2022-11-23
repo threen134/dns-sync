@@ -1,0 +1,11 @@
+export SERVICE_AUTH_TYPE=iam
+export SERVICE_APIKEY=
+export DNS_SVCS_URL=https://api.dns-svcs.cloud.ibm.com/v1
+export DNS_SVCS_INSTANCE_ID=
+export DNS_SVCS_ZONE_ID=
+export DNS_SVCS_SYNC_INTERNAL=5
+export LOG_LEVEL=debug
+export BIND9_ZONE_NAME=
+export BIND9_ZONE_PATH=
+export RESTART_CMD="systemctl restart named.service"
+export LISTING_IP=
