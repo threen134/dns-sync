@@ -16,7 +16,6 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	dnssvcsv1 "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	"github.com/miekg/dns"
-	log "github.com/sirupsen/logrus"
 )
 
 var dnsServicesURL string
@@ -36,6 +35,7 @@ var ONE_WEEK uint32 = 7 * ONE_DAY
 
 func init() {
 	var err error
+	NewLogger("/var/log/dnssyn.log")
 	dnsServicesURL = os.Getenv("DNS_SVCS_URL")
 	dnsServicesInstanceID = os.Getenv("DNS_SVCS_INSTANCE_ID")
 	dnsServicesZoneID = os.Getenv("DNS_SVCS_ZONE_ID")
@@ -47,33 +47,12 @@ func init() {
 	if err != nil {
 		log.Fatal("invalid DNS_SVCS_SYNC_INTERNAL format.")
 	}
-
-	lvl, ok := os.LookupEnv("LOG_LEVEL")
-	// LOG_LEVEL not set, let's default to debug
-	if !ok {
-		lvl = "debug"
-	}
-	// parse string, this is built-in feature of logrus
-	ll, err := log.ParseLevel(lvl)
-	if err != nil {
-		ll = log.DebugLevel
-	}
-	// set global log level
-	log.SetLevel(ll)
-	switch ll {
-	case log.DebugLevel:
-		core.SetLoggingLevel(core.LevelDebug)
-	case log.InfoLevel:
-		core.SetLoggingLevel(core.LevelInfo)
-	default:
-		core.SetLoggingLevel(core.LevelDebug)
-	}
 }
 
 func main() {
 	authenticator, err := core.GetAuthenticatorFromEnvironment("service")
 	if err != nil {
-		log.Error(err)
+		log.Error(err.Error())
 		log.Panic("fail to get auth information.")
 	}
 
@@ -81,7 +60,7 @@ func main() {
 
 	service, err := dnssvcsv1.NewDnsSvcsV1(options)
 	if err != nil {
-		log.Error(err)
+		log.Error(err.Error())
 		log.Fatal("failed to initial dns service.")
 	}
 	service.SetServiceURL(dnsServicesURL)
@@ -105,15 +84,12 @@ func main() {
 			time.Sleep(10 * time.Second)
 		}
 		if err != nil && response.StatusCode != http.StatusOK {
-			log.Error(err)
+			log.Error(err.Error())
 			log.Fatal("fail to call pdns service")
 		}
-
-		log.Debug(response.StatusCode)
-		log.Debug(result)
 		dnszone, err := io.ReadAll(result)
 		if err != nil {
-			log.Error(err)
+			log.Error(err.Error())
 			log.Fatal("fail to read response body")
 		}
 		hashVal := hash(dnszone)
@@ -185,7 +161,7 @@ func saveZoneFile(r []byte, zoneName, path string) {
 
 	// bad zone file
 	if err := zoneParser.Err(); err != nil {
-		log.WithError(err).Error("Fail to parse zone file")
+		log.Error(err.Error())
 		log.Fatal("invalid pdns zone file")
 	}
 	writeFile(path, dnsRRs)
@@ -220,7 +196,7 @@ func resetDNSServer(cmdstr string) {
 	output, err := cmd.CombinedOutput()
 	log.Info(string(output))
 	if err != nil {
-		log.Error(err)
+		log.Error(err.Error())
 		log.Fatal("fail to restart dns servcie")
 	}
 }
